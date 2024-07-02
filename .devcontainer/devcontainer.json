@@ -1,0 +1,17 @@
+{
+    "name": "ROS2 Humble Development",
+    "dockerFile": "Dockerfile",
+    "workspaceFolder": "/workspace",
+    "extensions": [
+        "ms-iot.vscode-ros",
+        "ms-python.python"
+    ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "postCreateCommand": "rosdep update && colcon build",
+    "remoteUser": "root",
+    "mounts": [
+        "source=/dev/bus/usb,target=/dev/bus/usb,type=bind"
+    ]
+}
