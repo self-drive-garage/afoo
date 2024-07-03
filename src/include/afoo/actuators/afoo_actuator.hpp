@@ -1,5 +1,7 @@
 #pragma once
 
+#include "afoo/actuators/sabertooth_motor_controller.hpp"
+
 #include <hardware_interface/handle.hpp>
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
@@ -16,6 +18,7 @@
 #include <vector>
 
 namespace afoo::actuators {
+
 class AfooActuator : public hardware_interface::SystemInterface {
  public:
   RCLCPP_SHARED_PTR_DEFINITIONS(AfooActuator);
@@ -42,7 +45,9 @@ class AfooActuator : public hardware_interface::SystemInterface {
       const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
  private:
-  // Parameters for the DiffBot simulation
+  SabertoothMotorController motorController_;
+
+  // Parameters for the Afoo simulation
   double hw_start_sec_;
   double hw_stop_sec_;
 

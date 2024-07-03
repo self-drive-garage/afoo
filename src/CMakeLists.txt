@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(afoo)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra)
 endif()
@@ -25,9 +29,12 @@ add_library(
   afoo
   SHARED
   actuators/afoo_actuator.cpp
+  actuators/sabertooth_motor_controller.cpp
+  io/boost_serial_device.cpp
+  io/boost_serial_device_manager.cpp
 )
 
-target_compile_features(afoo PUBLIC cxx_std_17)
+target_compile_features(afoo PUBLIC cxx_std_20)
 
 target_include_directories(afoo PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
