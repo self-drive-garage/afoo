@@ -5,6 +5,7 @@
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
@@ -117,13 +118,13 @@ hardware_interface::CallbackReturn AfooActuator::on_activate(
     const rclcpp_lifecycle::State& /*previous_state*/) {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to
   // your production code
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
-              "Activating ...please wait...");
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               "Activating ...please wait...");
 
   for (auto i = 0; i < hw_start_sec_; i++) {
     rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"), "%.1f seconds left...",
-                hw_start_sec_ - i);
+    RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"), "%.1f seconds left...",
+                 hw_start_sec_ - i);
   }
   // END: This part here is for exemplary purposes - Please do not copy to your
   // production code
@@ -137,7 +138,7 @@ hardware_interface::CallbackReturn AfooActuator::on_activate(
     }
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"), "Successfully activated!");
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"), "Successfully activated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -146,18 +147,18 @@ hardware_interface::CallbackReturn AfooActuator::on_deactivate(
     const rclcpp_lifecycle::State& /*previous_state*/) {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to
   // your production code
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
-              "Deactivating ...please wait...");
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               "Deactivating ...please wait...");
 
   for (auto i = 0; i < hw_stop_sec_; i++) {
     rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"), "%.1f seconds left...",
-                hw_stop_sec_ - i);
+    RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"), "%.1f seconds left...",
+                 hw_stop_sec_ - i);
   }
   // END: This part here is for exemplary purposes - Please do not copy to your
   // production code
 
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"), "Successfully deactivated!");
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"), "Successfully deactivated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -172,10 +173,10 @@ hardware_interface::return_type AfooActuator::read(
     // Simply integrates
     hw_positions_[i] = hw_positions_[i] + period.seconds() * hw_velocities_[i];
 
-    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
-                "Got position state %.5f and velocity state %.5f for '%s'!",
-                hw_positions_[i], hw_velocities_[i],
-                info_.joints[i].name.c_str());
+    RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+                 "Got position state %.5f and velocity state %.5f for '%s'!",
+                 hw_positions_[i], hw_velocities_[i],
+                 info_.joints[i].name.c_str());
   }
   // END: This part here is for exemplary purposes - Please do not copy to your
   // production code
@@ -187,18 +188,48 @@ hardware_interface::return_type afoo::actuators ::AfooActuator::write(
     const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to
   // your production code
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"), "Writing...");
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"), "Writing...");
 
-  for (auto i = 0u; i < hw_commands_.size(); i++) {
-    // Simulate sending commands to the hardware
-    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
-                "Got command %.5f for '%s'!", hw_commands_[i],
-                info_.joints[i].name.c_str());
+  // for (auto i = 0u; i < hw_commands_.size(); i++) {
+  //   // Simulate sending commands to the hardware
+  //   RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+  //               ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
+  //               hw_commands_[i], info_.joints[i].name.c_str());
 
-    hw_velocities_[i] = hw_commands_[i];
-  }
-  RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
-              "Joints successfully written!");
+  //   hw_velocities_[i] = hw_commands_[i];
+  // }
+  double leftMotorSpeed = hw_commands_[0];
+  double rightMotorSpeed = hw_commands_[1];
+
+  hw_velocities_[0] = hw_commands_[0];
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
+               hw_commands_[0], info_.joints[0].name.c_str());
+
+  hw_velocities_[1] = hw_commands_[1];
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
+               hw_commands_[1], info_.joints[1].name.c_str());
+
+  // TO-DO: DONT HARD CODE THESE
+  leftMotorSpeed = std::clamp(leftMotorSpeed, -127.0, 127.0);
+  rightMotorSpeed = std::clamp(rightMotorSpeed, -127.0, 127.0);
+
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               "Clamping speed to %.5f for '%s'!", leftMotorSpeed,
+               info_.joints[0].name.c_str());
+
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               "Clamping speed to %.5f for '%s'!", rightMotorSpeed,
+               info_.joints[1].name.c_str());
+
+  motorController_.driveMotor(1, static_cast<int>(std::abs(leftMotorSpeed)),
+                              hw_commands_[0] > 0);
+  motorController_.driveMotor(2, static_cast<int>(std::abs(rightMotorSpeed)),
+                              hw_commands_[1] > 0);
+
+  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
+               "Joints successfully written!");
   // END: This part here is for exemplary purposes - Please do not copy to your
   // production code
 

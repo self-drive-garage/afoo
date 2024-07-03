@@ -16,7 +16,7 @@ Status BoostSerialDeviceManager::initializeDevice(const std::string& port) {
     RCLCPP_DEBUG(logger_, "Initializing device.");
     return deviceMap_[port]->initialize();
   }
-  RCLCPP_INFO(logger_, "Device already initialized or not created.");
+  RCLCPP_DEBUG(logger_, "Device already initialized or not created.");
   return {STATUS::SUCCESS};  // Already initialized or device not created
 }
 
@@ -36,7 +36,7 @@ Status BoostSerialDeviceManager::closeDevice(const std::string& port) {
     RCLCPP_DEBUG(logger_, "Closing device.");
     return deviceMap_[port]->close();
   }
-  RCLCPP_INFO(logger_, "Device was not open or not created.");
+  RCLCPP_DEBUG(logger_, "Device was not open or not created.");
   return {STATUS::SUCCESS};  // Device was not open or not created
 }
 
@@ -55,10 +55,10 @@ BoostSerialDeviceManager::readFromDevice(const std::string& port,
 Status BoostSerialDeviceManager::createDevice(const std::string& port,
                                               uint32_t baudRate) {
   std::lock_guard<std::mutex> lock(deviceMutex_);
-  RCLCPP_INFO(logger_, "BoostSerialDeviceManager::createDevice ");
+  RCLCPP_DEBUG(logger_, "BoostSerialDeviceManager::createDevice ");
   if (!deviceMap_.contains(port)) {
-    RCLCPP_INFO(logger_, "Creating device at port: with baud rate: %s",
-                port.c_str());
+    RCLCPP_DEBUG(logger_, "Creating device at port: with baud rate: %s",
+                 port.c_str());
     try {
       deviceMap_[port] = std::make_unique<BoostSerialDevice>(port, baudRate);
       auto status = deviceMap_[port]->open();
@@ -66,7 +66,7 @@ Status BoostSerialDeviceManager::createDevice(const std::string& port,
         RCLCPP_ERROR(logger_, "Failed to open newly created device.");
         return status;
       }
-      RCLCPP_INFO(logger_, "Device created and opened successfully.");
+      RCLCPP_DEBUG(logger_, "Device created and opened successfully.");
       return {STATUS::SUCCESS};
     } catch (const boost::system::system_error& e) {
       const boost::system::error_code& ec = e.code();
@@ -100,7 +100,7 @@ Status BoostSerialDeviceManager::writeToDevice(const std::string& port,
     return {STATUS::ERROR, ERROR::SENSOR_FAILURE};
   }
 
-  RCLCPP_INFO(logger_, "Writing to device: %s", toHexString(data).c_str());
+  RCLCPP_DEBUG(logger_, "Writing to device: %s", toHexString(data).c_str());
   return deviceMap_[port]->write(data);
 }
 
