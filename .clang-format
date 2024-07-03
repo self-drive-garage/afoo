@@ -1,0 +1,21 @@
+---
+BasedOnStyle: Google
+---
+Language:                               Cpp
+Cpp11BracedListStyle:                   true
+Standard:                               Cpp11
+CommentPragmas:                         '^ NOLINT'
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: "^<(experimental\/)?[a-zA-Z_-]*>" # system headers (& experimental headers)
+    Priority: 3
+    SortPriority: 3
+    CaseSensitive: false
+  - Regex: "^(\"[a-zA-Z._-].*\"|<interfaces.*)" # same repo headers
+    Priority: 1
+    SortPriority: 1
+    CaseSensitive: false
+  - Regex: "^.*" # everything else (third party & non-standard format system headers)
+    Priority: 2
+    SortPriority: 2
+    CaseSensitive: false

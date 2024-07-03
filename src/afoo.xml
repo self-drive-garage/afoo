@@ -1,0 +1,9 @@
+<library path="afoo">
+  <class name="afoo/AfooActuator"
+         type="afoo::actuators::AfooActuator"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+     It uses velocity command and position state interface. A starting point to implement a hardware interface for differential-drive mobile robots.
+    </description>
+  </class>
+</library>
