@@ -3,6 +3,8 @@
 
 #include "afoo/io/status.hpp"
 
+#include <algorithm>
+
 namespace afoo::actuators {
 SabertoothMotorController::SabertoothMotorController(const std::string& port,
                                                      uint32_t baudRate)
@@ -15,7 +17,8 @@ SabertoothMotorController::~SabertoothMotorController() {
 }
 
 io::Status SabertoothMotorController::driveMotor(int motor, int speed,
-                                                 bool forward) {
+                                                 bool forward,
+                                                 bool logMessage) {
   // Motor IDs: 1 for Motor 1, 2 for Motor 2
   // Speed: 0-127 (0 is stop, 127 is full speed)
   // Forward: true (forward), false (backward)
@@ -24,7 +27,7 @@ io::Status SabertoothMotorController::driveMotor(int motor, int speed,
   }
 
   int commandByte = motor == 1 ? (forward ? 0 : 1) : (forward ? 4 : 5);
-  int addressByte = 128;  // default address
+  int addressByte = 129;  // default address
   int checksum = calculateChecksum(addressByte, commandByte, speed);
 
   std::string command;
@@ -33,7 +36,27 @@ io::Status SabertoothMotorController::driveMotor(int motor, int speed,
   command += speed;
   command += checksum;
 
-  return manager_.writeToDevice(port_, std::move(command));
+  return manager_.writeToDevice(port_, std::move(command), logMessage);
+}
+
+io::Status SabertoothMotorController::driveMotorSimplified(int motor, int speed,
+                                                           bool reverse) {
+  std::string command;
+  int command_ = 0;
+
+  speed = std::clamp(speed, -127, 127);
+
+  int magnitude = std::abs(speed) / 2;
+
+  if (motor == 1) {
+    command_ = (!reverse) ? 63 - magnitude : 64 + magnitude;
+  } else if (motor == 2) {
+    command_ = (!reverse) ? 191 - magnitude : 192 + magnitude;
+  }
+
+  command = std::to_string(std::clamp(command_, 1, 254));
+
+  return manager_.writeToDevice(port_, std::move(command), false);
 }
 
 io::Status SabertoothMotorController::sendCommand(int address, int command,
@@ -44,7 +67,7 @@ io::Status SabertoothMotorController::sendCommand(int address, int command,
   packet += static_cast<char>(command);
   packet += static_cast<char>(value);
   packet += checksum;
-  return manager_.writeToDevice(port_, std::move(packet));
+  return manager_.writeToDevice(port_, std::move(packet), false);
 }
 
 io::Status SabertoothMotorController::mixedModeDrive(int speed, int turn) {

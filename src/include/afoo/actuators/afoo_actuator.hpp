@@ -55,6 +55,13 @@ class AfooActuator : public hardware_interface::SystemInterface {
   std::vector<double> hw_commands_;
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
+
+  double leftMotorSpeed_ = 0.0;
+  double rightMotorSpeed_ = 0.0;
+
+  bool is_between(double value, double lower, double upper) {
+    return (lower <= value) && (value <= upper);
+  }
 };
 
 }  // namespace afoo::actuators

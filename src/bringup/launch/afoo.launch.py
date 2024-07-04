@@ -116,6 +116,7 @@ def generate_launch_description():
         remappings=[
             ("~/robot_description", "/robot_description"),
         ],
+        # arguments=['--ros-args', '--log-level', 'debug']
     )
     robot_state_pub_node = Node(
         package="robot_state_publisher",

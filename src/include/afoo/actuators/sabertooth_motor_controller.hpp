@@ -17,7 +17,7 @@ class SabertoothMotorController {
   /// @brief Constructs a Sabertooth motor controller object.
   /// @param port The serial port to connect to, e.g., "/dev/ttyTHS0".
   /// @param baudRate The baud rate for serial communication, defaults to 9600.
-  SabertoothMotorController(const std::string& port = "/dev/ttyTHS0",
+  SabertoothMotorController(const std::string& port = "/dev/ttyTHS1",
                             uint32_t baudRate = 9600);
 
   /// @brief Destroys the Sabertooth motor controller object, closing any open
@@ -29,7 +29,9 @@ class SabertoothMotorController {
   /// @param speed The speed to set for the motor, ranging from 0 (stop) to 127
   /// (max speed).
   /// @param forward True to drive forward, false for backward.
-  io::Status driveMotor(int motor, int speed, bool forward);
+  io::Status driveMotor(int motor, int speed, bool forward, bool logMessage);
+
+  io::Status driveMotorSimplified(int motor, int speed, bool forward);
 
   /// @brief Drives motors in mixed mode for combined speed and turning control.
   /// @param speed The speed to drive forward or backward.

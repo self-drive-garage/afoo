@@ -198,35 +198,52 @@ hardware_interface::return_type afoo::actuators ::AfooActuator::write(
 
   //   hw_velocities_[i] = hw_commands_[i];
   // }
-  double leftMotorSpeed = hw_commands_[0];
-  double rightMotorSpeed = hw_commands_[1];
+
+  bool logMessage = false;
+  if (hw_commands_[0] != leftMotorSpeed_ ||
+      hw_commands_[1] != rightMotorSpeed_) {
+    logMessage = true;
+  }
+
+  leftMotorSpeed_ = hw_commands_[0];
+  rightMotorSpeed_ = hw_commands_[1];
 
   hw_velocities_[0] = hw_commands_[0];
-  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
-               ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
-               hw_commands_[0], info_.joints[0].name.c_str());
-
   hw_velocities_[1] = hw_commands_[1];
-  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
-               ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
-               hw_commands_[1], info_.joints[1].name.c_str());
 
-  // TO-DO: DONT HARD CODE THESE
-  leftMotorSpeed = std::clamp(leftMotorSpeed, -127.0, 127.0);
-  rightMotorSpeed = std::clamp(rightMotorSpeed, -127.0, 127.0);
+  leftMotorSpeed_ = std::clamp(leftMotorSpeed_, -127.0, 127.0);
+  rightMotorSpeed_ = std::clamp(rightMotorSpeed_, -127.0, 127.0);
 
-  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
-               "Clamping speed to %.5f for '%s'!", leftMotorSpeed,
-               info_.joints[0].name.c_str());
+  if (is_between(leftMotorSpeed_, -3, 3) &&
+      is_between(rightMotorSpeed_, -3, 3)) {
+    // logMessage = true;
+    leftMotorSpeed_ *= 50;
+    rightMotorSpeed_ *= 50;
+  }
 
-  RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
-               "Clamping speed to %.5f for '%s'!", rightMotorSpeed,
-               info_.joints[1].name.c_str());
+  if (logMessage) {
+    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
+                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
+                hw_commands_[0], info_.joints[0].name.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
+                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Got command %.5f for '%s'!",
+                hw_commands_[1], info_.joints[1].name.c_str());
 
-  motorController_.driveMotor(1, static_cast<int>(std::abs(leftMotorSpeed)),
-                              hw_commands_[0] > 0);
-  motorController_.driveMotor(2, static_cast<int>(std::abs(rightMotorSpeed)),
-                              hw_commands_[1] > 0);
+    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
+                "Clamping speed to %.5f for '%s'!", leftMotorSpeed_,
+                info_.joints[0].name.c_str());
+
+    RCLCPP_INFO(rclcpp::get_logger("AfooActuator"),
+                "Clamping speed to %.5f for '%s'!", rightMotorSpeed_,
+                info_.joints[1].name.c_str());
+  }
+
+  motorController_.driveMotor(1,
+                              std::abs(static_cast<int>(1.5 * leftMotorSpeed_)),
+                              hw_commands_[0] > 0, logMessage);
+  motorController_.driveMotor(
+      2, std::abs(static_cast<int>(1.5 * rightMotorSpeed_)),
+      hw_commands_[1] > 0, logMessage);
 
   RCLCPP_DEBUG(rclcpp::get_logger("AfooActuator"),
                "Joints successfully written!");
